@@ -1,10 +1,9 @@
 ﻿namespace BLEntities
 {
-    public class Product
+    public class Config
     {
-        public int Id { get; set; }
-        public string Command => $"/wtb_{Id}";
-        public string Name { get; set; }
+        public int ProfitAmount { get; set; }
+        public int ProfitPercentage { get; set; }
 
         public override bool Equals(object obj)
         {
@@ -18,13 +17,13 @@
                 return false;
             }
 
-            var product = (Product)obj;
-            return Id == product.Id && Name.Equals(product.Name);
+            var config = (Config)obj;
+            return ProfitAmount == config.ProfitAmount && ProfitPercentage == config.ProfitPercentage;
         }
 
         public override int GetHashCode()
         {
-            return Id.GetHashCode() + Name.GetHashCode() * 17;
+            return ProfitAmount.GetHashCode() + ProfitPercentage.GetHashCode();
         }
     }
 }

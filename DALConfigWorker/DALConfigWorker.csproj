@@ -4,16 +4,15 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{1855760E-1CD7-4DD8-AAF6-DB94C9F96D65}</ProjectGuid>
-    <OutputType>Exe</OutputType>
-    <RootNamespace>UIConsole</RootNamespace>
-    <AssemblyName>UIConsole</AssemblyName>
+    <ProjectGuid>{AE89A422-EAD0-47C0-981D-585DFA9D150D}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>DALConfigWorker</RootNamespace>
+    <AssemblyName>DALConfigWorker</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -23,7 +22,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -32,8 +30,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
-    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -43,32 +43,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Program.cs" />
+    <Compile Include="ConfigWorker.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\BLEntities\BLEntities.csproj">
       <Project>{17e30287-1692-4f2f-afe2-7e71f60263ce}</Project>
       <Name>BLEntities</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\BLExchangeParser\BLExchangeParser.csproj">
-      <Project>{028f2fbe-ab19-4f30-b7b2-54db63bf8fcc}</Project>
-      <Name>BLExchangeParser</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\BLProfitSearcher\BLProfitSearcher.csproj">
-      <Project>{d2901e08-4106-435a-b3df-15e61e7f76de}</Project>
-      <Name>BLProfitSearcher</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\BLTelegramClient\BLTelegramClient.csproj">
-      <Project>{4e8a5790-7ccb-4f4f-bbb3-483d632711af}</Project>
-      <Name>BLTelegramClient</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\DALConfigWorker\DALConfigWorker.csproj">
-      <Project>{ae89a422-ead0-47c0-981d-585dfa9d150d}</Project>
-      <Name>DALConfigWorker</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

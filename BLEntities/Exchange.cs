@@ -6,6 +6,11 @@
     {
         public IList<ProductOffers> ProductOffers { get; set; }
 
+        public Exchange()
+        {
+            ProductOffers = new List<ProductOffers>();
+        }
+
         public override bool Equals(object obj)
         {
             if (obj == null)

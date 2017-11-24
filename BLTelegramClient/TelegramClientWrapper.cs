@@ -1,62 +1,107 @@
-﻿using TeleSharp.TL.Messages;
-
-namespace BLTelegramClient
+﻿namespace BLTelegramClient
 {
     using System;
     using System.Linq;
+    using System.Threading;
     using System.Threading.Tasks;
     using TeleSharp.TL;
+    using TeleSharp.TL.Messages;
     using TLSharp.Core;
 
     public class TelegramClientWrapper
     {
-        private readonly int _apiId;
-        private readonly string _apiHash;
-        private TelegramClient _client;
-        private TLInputPeerUser _participant;
+        private readonly int apiId;
+        private readonly string apiHash;
+        private TelegramClient client;
+        private TLInputPeerUser participant;
 
         public TelegramClientWrapper(int apiId, string apiHash)
         {
-            _apiId = apiId;
-            _apiHash = apiHash;
+            this.apiId = apiId;
+            this.apiHash = apiHash;
         }
 
-        public async Task SendMessage(string message)
+        public async Task<string> SendMessageAndGetResponseAsync(string message)
         {
-            await _client.SendMessageAsync(_participant, message);
+            int requestAttempts = 0, responseAttempts = 0;
+            var response = string.Empty;
+
+            while (requestAttempts != 2)
+            {
+                await SendMessageAsync(message);
+                Console.WriteLine($"Sent command {message}");
+                while (responseAttempts != 5)
+                {
+                    response = await GetLastMessageAsync();
+                    Console.WriteLine("Got message");
+                    if (!response.Equals(message))
+                    {
+                        Console.WriteLine("Message is valid");
+                        return response;
+                    }
+
+                    Console.WriteLine("Message is invalid");
+                    responseAttempts++;
+                    if (responseAttempts != 3)
+                    {
+                        Console.WriteLine($"Sleep for {200 * responseAttempts}");
+                        Thread.Sleep(300 * responseAttempts);
+                    }
+                }
+
+                requestAttempts++;
+            }
+            return response;
         }
 
-        public async Task<string> GetLastMessage()
+        public async Task SendMessageAsync(string message)
         {
-            var history = await _client.GetHistoryAsync(_participant, 0, Int32.MaxValue, 1);
-            var messages = (TLMessagesSlice)history;
-            var lastMessage = (TLMessage)messages.Messages.FirstOrDefault();
+            await client.SendMessageAsync(participant, message);
+        }
+
+        public async Task<string> GetLastMessageAsync()
+        {
+            var history = await client.GetHistoryAsync(participant, 0, Int32.MaxValue, 1);
+            var messages = (TLMessagesSlice) history;
+            var lastMessage = (TLMessage) messages.Messages.FirstOrDefault();
             if (lastMessage != null)
             {
                 return lastMessage.Message;
             }
-            return String.Empty;
+
+            return string.Empty;
         }
 
-        public async Task PrepareConnection(string participantName, bool firstConnect = false, string phoneNumber = "", string code = "")
+        public async Task SendMessageToChannel(string message)
         {
-            await AuthenticateUser();
+            var dialogs = (TLDialogs)await client.GetUserDialogsAsync();
+            var chat = dialogs.Chats
+                .OfType<TLChannel>()
+                .FirstOrDefault(c => c.Title == "Рубиновый барыга");
+
+            await client.SendMessageAsync(new TLInputPeerChannel() { ChannelId = chat.Id, AccessHash = chat.AccessHash.Value }, message);
+        }
+
+        public async Task PrepareConnectionAsync(string participantName, bool firstConnect = false, string phoneNumber = "", string code = "")
+        {
+            await AuthenticateUserAsync();
             if (firstConnect)
             {
-                AuthorizeClient(phoneNumber, code);
+                AuthorizeClientAsync(phoneNumber, code);
             }
-            await InitializeParticipant(participantName);
+
+            await InitializeParticipantAsync(participantName);
         }
 
-        private async Task AuthenticateUser()
+        private async Task AuthenticateUserAsync()
         {
-            _client = NewClient();
-            await _client.ConnectAsync();
+            client = NewClient();
+            await client.ConnectAsync();
         }
 
-        private async Task InitializeParticipant(string participantName)
+        private async Task InitializeParticipantAsync(string participantName)
         {
-            var searchResult = await _client.SearchUserAsync(participantName);
+            var searchResult = await client.SearchUserAsync(participantName);
             var participant = (TLUser)searchResult.Users.FirstOrDefault();
 
             if (participant == null)
@@ -67,26 +112,26 @@ namespace BLTelegramClient
             var id = participant.Id;
             var hash = participant.AccessHash.Value;
 
-            _participant = new TeleSharp.TL.TLInputPeerUser() { UserId = id, AccessHash = hash };
+            this.participant = new TeleSharp.TL.TLInputPeerUser() { UserId = id, AccessHash = hash };
         }
 
-        private async void AuthorizeClient(string phoneNumber, string code)
+        private async void AuthorizeClientAsync(string phoneNumber, string code)
         {
-            var hash = await _client.SendCodeRequestAsync(phoneNumber);
+            var hash = await client.SendCodeRequestAsync(phoneNumber);
 
             if (String.IsNullOrWhiteSpace(code))
             {
                 throw new Exception("CodeToAuthenticate is empty, fill it with the code you just got now by SMS/Telegram");
             }
 
-            await _client.MakeAuthAsync(phoneNumber, hash, code);
+            await client.MakeAuthAsync(phoneNumber, hash, code);
         }
 
         private TelegramClient NewClient()
         {
             try
             {
-                return new TelegramClient(_apiId, _apiHash);
+                return new TelegramClient(apiId, apiHash);
             }
             catch (MissingApiConfigurationException ex)
             {

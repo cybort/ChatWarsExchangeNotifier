@@ -1,24 +1,50 @@
-﻿using BLEntities;
-using System.Collections.Generic;
+﻿using System;
+using System.Collections;
+using System.Text;
+using System.Text.RegularExpressions;
 
 namespace BLExchangeParser
 {
+    using BLEntities;
+    using System.Collections.Generic;
+
     public class ExchangeParser
     {
-        public ProductOffers ParseWtbMessageResults(string message)
+        public ProductOffers ParseWtbMessageResults(Product product, string message)
         {
-            return new ProductOffers
+            var productOffers = new ProductOffers(product);
+
+            string productOffersPattern = $@"{product.Name}\s\(.+\)\n([\s\S]*)\n\n\nКупить 1шт: {product.Command}_1\n\nКупить 5шт: {product.Command}_5";
+            Match productOffersMatch = Regex.Match(message, productOffersPattern);
+            if (productOffersMatch.Success)
             {
-                Product = new Product {Id = 123, Name = "Философский камень"},
-                Offers = new List<Offer>
+                var offers = productOffersMatch.Groups[1].Value;
+                productOffers.Offers = ParseOffers(offers);
+            }
+
+            return productOffers;
+        }
+
+        private IList<Offer> ParseOffers(string offersLine)
+        {
+            var offers = new List<Offer>();
+            string productPattern = @"(\d+) шт по (\d+)";
+            foreach (var line in offersLine.Split('\n'))
+            {
+                Match productMatch = Regex.Match(line, productPattern);
+                if (productMatch.Success)
                 {
-                    new Offer {Count = 1, Price = 873},
-                    new Offer {Count = 1, Price = 900},
-                    new Offer {Count = 3, Price = 950},
-                    new Offer {Count = 1, Price = 970},
-                    new Offer {Count = 23, Price = 982}
+                    var offer = new Offer
+                    {
+                        Count = Convert.ToInt32(productMatch.Groups[1].Value),
+                        Price = Convert.ToInt32(productMatch.Groups[2].Value)
+                    };
+
+                    offers.Add(offer);
                 }
-            };
+            }
+
+            return offers;
         }
     }
 }

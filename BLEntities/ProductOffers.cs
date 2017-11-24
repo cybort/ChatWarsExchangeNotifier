@@ -9,6 +9,16 @@ namespace BLEntities
         public Product Product { get; set; }
         public IList<Offer> Offers { get; set; }
 
+        public ProductOffers()
+        {
+        }
+
+        public ProductOffers(Product product)
+        {
+            Product = product;
+            Offers = new List<Offer>();
+        }
+
         public override bool Equals(object obj)
         {
             if (obj == null)
